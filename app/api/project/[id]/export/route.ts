@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma"; // Assuming prisma is exported from here
+import prisma from "@/lib/prisma";
 import { generateNextJsZip } from "@/lib/export/zipper";
 
 export async function GET(
