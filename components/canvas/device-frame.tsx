@@ -102,6 +102,26 @@ const DeviceFrame = ({
     }
   }, [frameSize.height, frameSize.width, fullHtml, isDownloading, title]);
 
+  const handleDownloadZip = useCallback(async (type: "nextjs" | "vite") => {
+    try {
+      const response = await axios.get(
+        `/api/project/${projectId}/export?type=${type}`,
+        { responseType: 'blob' }
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${title || "project"}-export.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success(`Exported as ${type === 'nextjs' ? 'Next.js' : 'Vite'} project`);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to export project");
+    }
+  }, [projectId, title]);
+
   const handleRegenerate = useCallback(
     (prompt: string) => {
       regenerateMutation.mutate(
@@ -167,8 +187,8 @@ const DeviceFrame = ({
       className={cn(
         "relative z-10",
         isSelected &&
-          toolMode !== TOOL_MODE_ENUM.HAND &&
-          "ring-3 ring-blue-400 ring-offset-1",
+        toolMode !== TOOL_MODE_ENUM.HAND &&
+        "ring-3 ring-blue-400 ring-offset-1",
         toolMode === TOOL_MODE_ENUM.HAND
           ? "cursor-grab! active:cursor-grabbing!"
           : "cursor-move"
@@ -188,6 +208,7 @@ const DeviceFrame = ({
           isRegenerating={regenerateMutation.isPending}
           isDeleting={deleteMutation.isPending}
           onDownloadPng={handleDownloadPng}
+          onDownloadZip={handleDownloadZip}
           onRegenerate={handleRegenerate}
           onDeleteFrame={handleDeleteFrame}
           onOpenHtmlDialog={onOpenHtmlDialog}

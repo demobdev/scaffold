@@ -123,7 +123,15 @@ const THEME_OPTIONS_STRING = THEME_LIST.map(
 
 export const ANALYSIS_PROMPT = `
 You are a Lead UI/UX mobile app Designer.
-Return JSON with screens based on user request. If "one" is specified, return 1 screen, otherwise default to 1-4 screens with must Start with welcome onboarding screen).
+Return ONLY a valid JSON object. Do not include markdown code blocks (e.g. no \`\`\`json), no prefixes, no suffixes, no conversational filler, and no trailing punctuation.
+
+# CRITICAL JSON RULES
+1. All strings MUST be correctly escaped. Use \\n for newlines within strings.
+2. The response must start with { and end with }.
+3. Do not include any text before or after the JSON.
+
+# APP SPECIFICATION
+Return JSON with screens based on user request. If "one" is specified, return 1 screen, otherwise default to 1-4 screens (must start with a welcome/onboarding screen).
 For EACH screen:
 - id: kebab-case name (e.g., "home-dashboard", "workout-tracker")
 - name: Display name (e.g., "Home Dashboard", "Workout Tracker")
@@ -134,18 +142,10 @@ For EACH screen:
   * Real data examples (Netflix $12.99, 7h 20m, 8,432 steps, not "amount")
   * Exact chart types (circular progress, line chart, bar chart, etc.)
   * Icon names for every element (use lucide icon names)
-  * **Consistency:** Every style or component must match all screens. (e.g bottom tabs, button etc)
-  * **BOTTOM NAVIGATION IF ONLY NEEDED (FOR EVERY SCREEN THAT IS NEEDED - MUST BE EXPLICIT & DETAILED & CREATIVE):**
-    - List ALL 5 icons by name (e.g., lucide:home, lucide:compass, lucide:zap, lucide:message-circle, lucide:user)
-    - **Specify which icon is ACTIVE for THIS screen
-    - **Include exact styling: position, height, colors, backdrop-blur, shadow, border-radius
-    - Include active state styling: text color, glow effect, indicator (text-[var(--primary)] + drop-shadow-[0_0_8px_var(--primary)])
-    - **Inactive state: text-[var(--muted-foreground)]
-    - **ACTIVE MAPPING:** Home→Dashboard, Stats→Analytics/History, Track→Workout, Profile→Settings, Menu→More
-    - **NOTE: NO bottom nav on splash/onboarding/auth screens
-    - **Never say in Bottom Navigation: EXACT COPY of Screen 1 (all 5 icons identical), only lucide:user is active..
-    - **IF THERE IS AN EXISTING SCREENS CONTEXT USE THE SAME AS THE EXISTING SCREENS
-
+  * Consistency: Every style or component must match all screens.
+  * BOTTOM NAVIGATION (IF NEEDED): List ALL 5 icons by name and specify which is ACTIVE.
+  * ACTIVE MAPPING: Home→Dashboard, Stats→Analytics, Track→Workout, Profile→Settings.
+  * NOTE: NO bottom nav on splash/onboarding/auth screens.
 
 EXAMPLE of good visualDescription:
 "Root: relative w-full min-h-screen bg-[var(--background)] with overflow-y-auto on inner content.

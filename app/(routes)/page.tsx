@@ -1,9 +1,13 @@
-import LandingSection from "./_common/landing-section";
+import { HeroSection } from "@/components/landing/hero-section";
+import { FeatureGrid } from "@/components/landing/feature-grid";
+import { Navbar } from "@/components/landing/navbar";
 
 export default function Home() {
   return (
-    <div>
-      <LandingSection />
-    </div>
+    <main>
+      <Navbar />
+      <HeroSection />
+      <FeatureGrid />
+    </main>
   );
 }

@@ -1,7 +1,7 @@
 import { generateObject, generateText, stepCountIs } from "ai";
 import { inngest } from "../client";
 import { z } from "zod";
-//import { openrouter } from "@/lib/openrouter";
+import { openrouter } from "@/lib/openrouter";
 import { FrameType } from "@/types/project";
 import { ANALYSIS_PROMPT, GENERATION_SYSTEM_PROMPT } from "@/lib/prompt";
 import prisma from "@/lib/prisma";
@@ -80,11 +80,11 @@ export const generateScreens = inngest.createFunction(
 
       const contextHTML = isExistingGeneration
         ? frames
-            .map(
-              (frame: FrameType) =>
-                `<!-- ${frame.title} -->\n${frame.htmlContent}`
-            )
-            .join("\n\n")
+          .map(
+            (frame: FrameType) =>
+              `<!-- ${frame.title} -->\n${frame.htmlContent}`
+          )
+          .join("\n\n")
         : "";
 
       const analysisPrompt = isExistingGeneration
@@ -107,7 +107,7 @@ export const generateScreens = inngest.createFunction(
         `.trim();
 
       const { object } = await generateObject({
-        model: "google/gemini-3-pro-preview",
+        model: openrouter("google/gemini-3-pro-preview"),
         schema: AnalysisSchema,
         system: ANALYSIS_PROMPT,
         prompt: analysisPrompt,
@@ -165,7 +165,7 @@ export const generateScreens = inngest.createFunction(
 
       await step.run(`generated-screen-${i}`, async () => {
         const result = await generateText({
-          model: "google/gemini-3-pro-preview",
+          model: openrouter("google/gemini-3-pro-preview"),
           system: GENERATION_SYSTEM_PROMPT,
           tools: {
             searchUnsplash: unsplashTool,
@@ -227,6 +227,14 @@ export const generateScreens = inngest.createFunction(
             htmlContent: finalHtml,
           },
         });
+
+        // Log for Flywheel
+        const { logPrompt } = await import("@/lib/ai/logging");
+        await logPrompt(
+          userId,
+          `User Request: ${prompt}\nVisual Description: ${screenPlan.visualDescription}`,
+          finalHtml
+        );
 
         // Add to generatedFrames for next iteration's context
         generatedFrames.push(frame);

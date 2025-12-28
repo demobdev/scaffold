@@ -47,6 +47,7 @@ type PropsType = {
   isDeleting?: boolean;
   onOpenHtmlDialog: () => void;
   onDownloadPng?: () => void;
+  onDownloadZip?: (type: "nextjs" | "vite") => void;
   onRegenerate?: (prompt: string) => void;
   onDeleteFrame?: () => void;
 };
@@ -60,6 +61,7 @@ const DeviceFrameToolbar = ({
   isDeleting = false,
   onOpenHtmlDialog,
   onDownloadPng,
+  onDownloadZip,
   onRegenerate,
   onDeleteFrame,
 }: PropsType) => {
@@ -114,22 +116,6 @@ const DeviceFrameToolbar = ({
         <>
           <Separator orientation="vertical" className="h-5! bg-border" />
           <ButtonGroup className="gap-px! justify-end pr-2! h-full ">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    disabled={disabled}
-                    size="icon-xs"
-                    variant="ghost"
-                    className="rounded-full!"
-                    onClick={onOpenHtmlDialog}
-                  >
-                    <CodeIcon className="size-3.5! stroke-1.5! mt-px" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>View HTML</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
 
             <TooltipProvider>
               <Tooltip>
@@ -151,6 +137,37 @@ const DeviceFrameToolbar = ({
                 <TooltipContent>Download PNG</TooltipContent>
               </Tooltip>
             </TooltipProvider>
+
+            <DropdownMenu>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        disabled={disabled}
+                        size="icon-xs"
+                        className="rounded-full!"
+                        variant="ghost"
+                      >
+                        <CodeIcon className="size-3.5! stroke-1.5! mt-px" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Export Code</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem onClick={() => onDownloadZip?.("nextjs")}>
+                  Export Next.js
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onDownloadZip?.("vite")} disabled>
+                  Export Vite (Coming Soon)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onOpenHtmlDialog}>
+                  View HTML
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
               <TooltipProvider>
                 <Tooltip>
