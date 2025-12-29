@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { generateNextJsZip } from "@/lib/export/zipper";
+import { generateNextJsZip, getPageContent } from "@/lib/export/zipper";
 
 export async function GET(
     req: NextRequest,
@@ -8,21 +8,21 @@ export async function GET(
 ) {
     const { id } = await params;
     const searchParams = req.nextUrl.searchParams;
-    const type = searchParams.get("type") || "nextjs"; // Default to nextjs
+    const type = searchParams.get("type") || "nextjs";
+    const mode = searchParams.get("mode") || "project"; // 'project' or 'single'
+    const frameIdRequested = searchParams.get("frameId");
 
     if (!id) {
         return new NextResponse("Project ID required", { status: 400 });
     }
 
     try {
-        // 1. Fetch Project and Frame
-        // We need the *latest* frame content to export
+        // 1. Fetch Project and Frames
         const project = await prisma.project.findUnique({
             where: { id },
             include: {
                 frames: {
-                    orderBy: { createdAt: "desc" },
-                    take: 1,
+                    orderBy: { createdAt: "asc" },
                 },
             },
         });
@@ -31,26 +31,43 @@ export async function GET(
             return new NextResponse("Project or Frames not found", { status: 404 });
         }
 
-        const currentFrame = project.frames[0];
+        // 2. Handle Single Page Export (Drag & Drop)
+        if (mode === "single") {
+            const frame = frameIdRequested
+                ? project.frames.find(f => f.id === frameIdRequested)
+                : project.frames[project.frames.length - 1]; // Default to latest
 
-        // 2. Generate Zip
-        let zipBuffer: Buffer;
+            if (!frame) return new NextResponse("Frame not found", { status: 404 });
 
-        if (type === "vite") {
-            // Placeholder for v2
-            return new NextResponse("Vite export not implemented yet", { status: 501 });
-        } else {
-            zipBuffer = await generateNextJsZip({
-                frame: {
-                    htmlContent: currentFrame.htmlContent
+            const pageCode = getPageContent(frame.htmlContent);
+            const fileName = `${frame.title.toLowerCase().replace(/\s+/g, "-")}.tsx`;
+
+            return new NextResponse(pageCode, {
+                status: 200,
+                headers: {
+                    "Content-Type": "text/typescript",
+                    "Content-Disposition": `attachment; filename="${fileName}"`,
                 },
-                projectValues: {
-                    theme: project.theme || "light"
-                }
             });
         }
 
-        // 3. Return Zip
+        // 3. Handle Project-wide Export
+        if (type === "vite") {
+            return new NextResponse("Vite export not implemented yet", { status: 501 });
+        }
+
+        const zipBuffer = await generateNextJsZip({
+            frames: project.frames.map(f => ({
+                id: f.id,
+                title: f.title,
+                htmlContent: f.htmlContent
+            })),
+            projectValues: {
+                theme: project.theme || "light"
+            }
+        });
+
+        // 4. Return Zip
         return new NextResponse(zipBuffer as any, {
             status: 200,
             headers: {

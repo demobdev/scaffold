@@ -1,6 +1,6 @@
 "use client";
 
-import { CameraIcon, ChevronDown, Palette, Save, Wand2 } from "lucide-react";
+import { CameraIcon, ChevronDown, Palette, Save, Wand2, DownloadIcon } from "lucide-react";
 import { useCanvas } from "@/context/canvas-context";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
@@ -15,6 +15,7 @@ import {
   useUpdateProject,
 } from "@/features/use-project-id";
 import { Spinner } from "../ui/spinner";
+import { toast } from "sonner";
 
 const CanvasFloatingToolbar = ({
   projectId,
@@ -40,6 +41,15 @@ const CanvasFloatingToolbar = ({
   const handleUpdate = () => {
     if (!currentTheme) return;
     update.mutate(currentTheme.id);
+  };
+
+  const handleExportProject = async () => {
+    try {
+      window.open(`/api/project/${projectId}/export?type=nextjs`, "_blank");
+      toast.success("Project export started");
+    } catch (error) {
+      toast.error("Failed to export project");
+    }
   };
 
   return (
@@ -113,7 +123,7 @@ const CanvasFloatingToolbar = ({
                           `w-6.5 h-6.5 rounded-full cursor-pointer
                            `,
                           currentTheme?.id === theme.id &&
-                            "ring-1 ring-offset-1"
+                          "ring-1 ring-offset-1"
                         )}
                         style={{
                           background: `linear-gradient(135deg, ${color.primary}, ${color.accent})`,
@@ -156,6 +166,15 @@ const CanvasFloatingToolbar = ({
               ) : (
                 <CameraIcon className="size-4.5" />
               )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full cursor-pointer"
+              onClick={handleExportProject}
+            >
+              <DownloadIcon className="size-4" />
+              Export
             </Button>
             <Button
               variant="default"

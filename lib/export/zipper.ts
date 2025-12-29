@@ -11,13 +11,34 @@ const AVAILABLE_COMPONENTS = [
 ];
 
 interface ExportOptions {
-    frame: {
+    frames: {
+        id: string;
+        title: string;
         htmlContent: string;
-        // We assume the frame also might contain a JSON representation in the future
-    };
+    }[];
     projectValues?: {
         theme?: string;
     };
+}
+
+export function getPageContent(htmlContent: string) {
+    let pageContent = htmlContent;
+
+    // Basic heuristic: if it doesn't look like a React file, wrap it.
+    if (!pageContent.includes("export default function")) {
+        pageContent = `
+import React from 'react';
+
+export default function Page() {
+  return (
+    <>
+      ${htmlContent}
+    </>
+  );
+}
+`;
+    }
+    return pageContent;
 }
 
 export async function generateNextJsZip(options: ExportOptions) {
@@ -44,48 +65,30 @@ export async function generateNextJsZip(options: ExportOptions) {
         }
     }
 
-    // 2. Add App Components (from options.frame.htmlContent)
-    // Logic: We need to parse the HTML/JSX and extract the code.
-    // For now, let's assume `options.frame.htmlContent` IS the full Page JSX code if it starts with 'import',
-    // or we wrap it if it's just HTML.
+    // 2. Add App Components for each frame
+    for (const frame of options.frames) {
+        const slug = frame.title.toLowerCase().replace(/\s+/g, "-");
+        const pageCode = getPageContent(frame.htmlContent);
 
-    let pageContent = options.frame.htmlContent;
+        // Root page is the first frame, others are in routes
+        if (options.frames.indexOf(frame) === 0) {
+            zip.file("app/page.tsx", pageCode);
+        } else {
+            zip.file(`app/${slug}/page.tsx`, pageCode);
+        }
 
-    // Basic heuristic: if it doesn't look like a React file, wrap it.
-    if (!pageContent.includes("export default function")) {
-        pageContent = `
-import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-// Add other imports as needed based on scanning
-
-export default function Page() {
-  return (
-    <>
-      ${pageContent}
-    </>
-  );
-}
-`;
-    }
-
-    zip.file("app/page.tsx", pageContent);
-
-    // 3. Scan for components and add them
-    // This is a naive scan. In production we'd use a proper parser or regex.
-    for (const component of AVAILABLE_COMPONENTS) {
-        // If the page content mentions the component (e.g. "Dialog", "Button")
-        // We map "button" -> "Button", "dropdown-menu" -> "DropdownMenu" (complex)
-        // Simpler: Check if "from \"@/components/ui/button\"" is present.
-        if (pageContent.includes(`@/components/ui/${component}`)) {
-            try {
-                const componentContent = await readFile(
-                    join(process.cwd(), "components/ui", `${component}.tsx`),
-                    "utf-8"
-                );
-                zip.file(`components/ui/${component}.tsx`, componentContent);
-            } catch (e) {
-                console.warn(`Could not include component: ${component}`);
+        // 3. Scan for components and add them (Simplified scan)
+        for (const component of AVAILABLE_COMPONENTS) {
+            if (pageCode.includes(`@/components/ui/${component}`)) {
+                try {
+                    const componentContent = await readFile(
+                        join(process.cwd(), "components/ui", `${component}.tsx`),
+                        "utf-8"
+                    );
+                    zip.file(`components/ui/${component}.tsx`, componentContent);
+                } catch (e) {
+                    console.warn(`Could not include component: ${component}`);
+                }
             }
         }
     }

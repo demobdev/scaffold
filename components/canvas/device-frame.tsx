@@ -122,6 +122,27 @@ const DeviceFrame = ({
     }
   }, [projectId, title]);
 
+  const handleDownloadSingle = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        `/api/project/${projectId}/export?mode=single&frameId=${frameId}`,
+        { responseType: 'blob' }
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      const fileName = `${title.toLowerCase().replace(/\s+/g, "-")}.tsx`;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success("Page code downloaded (.tsx)");
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to download page code");
+    }
+  }, [frameId, projectId, title]);
+
   const handleRegenerate = useCallback(
     (prompt: string) => {
       regenerateMutation.mutate(
@@ -209,6 +230,7 @@ const DeviceFrame = ({
           isDeleting={deleteMutation.isPending}
           onDownloadPng={handleDownloadPng}
           onDownloadZip={handleDownloadZip}
+          onDownloadSingle={handleDownloadSingle}
           onRegenerate={handleRegenerate}
           onDeleteFrame={handleDeleteFrame}
           onOpenHtmlDialog={onOpenHtmlDialog}

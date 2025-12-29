@@ -48,6 +48,7 @@ type PropsType = {
   onOpenHtmlDialog: () => void;
   onDownloadPng?: () => void;
   onDownloadZip?: (type: "nextjs" | "vite") => void;
+  onDownloadSingle?: () => void;
   onRegenerate?: (prompt: string) => void;
   onDeleteFrame?: () => void;
 };
@@ -62,6 +63,7 @@ const DeviceFrameToolbar = ({
   onOpenHtmlDialog,
   onDownloadPng,
   onDownloadZip,
+  onDownloadSingle,
   onRegenerate,
   onDeleteFrame,
 }: PropsType) => {
@@ -158,10 +160,10 @@ const DeviceFrameToolbar = ({
               </TooltipProvider>
               <DropdownMenuContent align="end" className="w-40">
                 <DropdownMenuItem onClick={() => onDownloadZip?.("nextjs")}>
-                  Export Next.js
+                  Export Project (Full ZIP)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDownloadZip?.("vite")} disabled>
-                  Export Vite (Coming Soon)
+                <DropdownMenuItem onClick={onDownloadSingle}>
+                  Download Page (.tsx)
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onOpenHtmlDialog}>
                   View HTML
