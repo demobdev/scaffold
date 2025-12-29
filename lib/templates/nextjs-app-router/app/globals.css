@@ -33,6 +33,9 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
+
+    --font-heading: "Inter", sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
   }
 
   .dark {
@@ -70,6 +73,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }

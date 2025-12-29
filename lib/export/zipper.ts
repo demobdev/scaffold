@@ -41,6 +41,33 @@ export default function Page() {
     return pageContent;
 }
 
+export function fixJSXSyntax(code: string) {
+    let result = code;
+
+    // 1. class -> className
+    result = result.replace(/\bclass="/g, 'className="');
+    result = result.replace(/\bclass='([^']+)'/g, "className='$1'");
+
+    // 2. HTML comments -> JSX comments
+    result = result.replace(/<!--([\s\S]*?)-->/g, "{/*$1*/}");
+
+    // 3. style="..." -> style={{...}}
+    result = result.replace(/style="([^"]+)"/g, (match, styleContent) => {
+        const pairs = styleContent.split(";").filter((p: string) => p.trim());
+        const styleObj = pairs.map((pair: string) => {
+            const [prop, val] = pair.split(":").map((s: string) => s.trim());
+            if (!prop || !val) return null;
+            // kebab-case to camelCase
+            const camelProp = prop.replace(/-([a-z])/g, (g: string) => g[1].toUpperCase());
+            return `${camelProp}: '${val}'`;
+        }).filter(Boolean).join(", ");
+
+        return `style={{${styleObj}}}`;
+    });
+
+    return result;
+}
+
 export async function generateNextJsZip(options: ExportOptions) {
     const zip = new JSZip();
     const templatePath = join(process.cwd(), "lib/templates/nextjs-app-router");
@@ -50,6 +77,8 @@ export async function generateNextJsZip(options: ExportOptions) {
         "package.json",
         "tsconfig.json",
         "tailwind.config.ts",
+        "postcss.config.js",
+        ".gitignore",
         "components.json",
         "app/layout.tsx",
         "app/globals.css",
@@ -79,7 +108,8 @@ export async function generateNextJsZip(options: ExportOptions) {
     // 2. Add App Components for each frame
     for (const frame of options.frames) {
         const slug = frame.title.toLowerCase().replace(/\s+/g, "-");
-        const pageCode = getPageContent(frame.htmlContent);
+        const rawContent = frame.htmlContent;
+        const pageCode = getPageContent(fixJSXSyntax(rawContent));
 
         // Root page is the first frame, others are in routes
         if (options.frames.indexOf(frame) === 0) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { generateNextJsZip, getPageContent } from "@/lib/export/zipper";
+import { generateNextJsZip, getPageContent, fixJSXSyntax } from "@/lib/export/zipper";
 import { THEME_LIST } from "@/lib/themes";
 
 export async function GET(
@@ -40,7 +40,7 @@ export async function GET(
 
             if (!frame) return new NextResponse("Frame not found", { status: 404 });
 
-            const pageCode = getPageContent(frame.htmlContent);
+            const pageCode = getPageContent(fixJSXSyntax(frame.htmlContent));
             const fileName = `${frame.title.toLowerCase().replace(/\s+/g, "-")}.tsx`;
 
             return new NextResponse(pageCode, {
