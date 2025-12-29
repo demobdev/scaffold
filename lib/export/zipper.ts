@@ -53,7 +53,8 @@ export async function generateNextJsZip(options: ExportOptions) {
         "components.json",
         "app/layout.tsx",
         "app/globals.css",
-        "lib/utils.ts"
+        "lib/utils.ts",
+        "README.md"
     ];
 
     for (const file of filesToCopy) {
