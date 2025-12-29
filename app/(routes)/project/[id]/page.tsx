@@ -34,7 +34,7 @@ const Page = () => {
         hasInitialData={hasInitialData}
         projectId={project?.id}
       >
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden pt-12 md:pt-0">
           <div className="relative flex-1">
             <Canvas
               projectId={project?.id}

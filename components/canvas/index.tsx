@@ -89,7 +89,7 @@ const Canvas = ({
     for (const sheet of document.styleSheets) {
       try {
         for (const rule of sheet.cssRules) styles += rule.cssText;
-      } catch {}
+      } catch { }
     }
 
     return {
@@ -149,10 +149,10 @@ const Canvas = ({
   const currentStatus = isSaving
     ? "finalizing"
     : isPending && (loadingStatus === null || loadingStatus === "idle")
-    ? "fetching"
-    : loadingStatus !== "idle" && loadingStatus !== "completed"
-    ? loadingStatus
-    : null;
+      ? "fetching"
+      : loadingStatus !== "idle" && loadingStatus !== "completed"
+        ? loadingStatus
+        : null;
   return (
     <>
       <div className="relative w-full h-full overflow-hidden">
@@ -284,6 +284,28 @@ const Canvas = ({
         open={openHtmlDialog}
         onOpenChange={setOpenHtmlDialog}
       />
+
+      {/* Mobile Slide Switcher */}
+      {frames && frames.length > 0 && (
+        <div className="fixed bottom-20 left-4 right-4 md:hidden z-40">
+          <div className="bg-background/80 backdrop-blur-md border rounded-full p-1 shadow-lg flex items-center gap-1 overflow-x-auto no-scrollbar">
+            {frames.map((frame, index) => (
+              <button
+                key={frame.id}
+                onClick={() => setSelectedFrameId(frame.id)}
+                className={cn(
+                  "flex-none px-4 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+                  selectedFrame?.id === frame.id
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-muted"
+                )}
+              >
+                {frame.title || `Screen ${index + 1}`}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
 };
