@@ -78,19 +78,19 @@ const DeviceFrameToolbar = ({
   return (
     <div
       className={cn(
-        `absolute -mt-2 flex items-center justify-between gap-2 rounded-full z-50
+        `absolute flex items-center justify-between gap-2 rounded-full z-[60] transition-all
         `,
         isSelected
-          ? `left-1/2 -translate-x-1/2 border bg-card
-            dark:bg-muted pl-2 py-1 shadown-sm
-            min-w-[260px] h-[35px]
+          ? `left-1/2 -translate-x-1/2 border bg-card/95 backdrop-blur-sm
+            dark:bg-muted pl-2 py-1 shadow-lg
+            min-w-[260px] h-[38px]
           `
-          : "w-[150px h-auto] left-10 "
+          : "w-[150px] h-auto left-10 "
       )}
       style={{
-        top: isSelected ? "-70px" : "-38px",
-        transformOrigin: "center top",
-        transform: `scale(${scale})`,
+        top: isSelected ? "-55px" : "-38px",
+        transformOrigin: "center bottom",
+        transform: `scale(${isSelected ? 1 : 0.8})`,
       }}
     >
       <div

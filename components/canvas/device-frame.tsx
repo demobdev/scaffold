@@ -162,9 +162,7 @@ const DeviceFrame = ({
       scale={scale}
       onClick={(e: any) => {
         e.stopPropagation();
-        if (toolMode === TOOL_MODE_ENUM.SELECT) {
-          setSelectedFrameId(frameId);
-        }
+        setSelectedFrameId(frameId);
       }}
       resizeHandleComponent={{
         topLeft: isSelected ? <Handle /> : undefined,
@@ -191,7 +189,9 @@ const DeviceFrame = ({
         "ring-3 ring-blue-400 ring-offset-1",
         toolMode === TOOL_MODE_ENUM.HAND
           ? "cursor-grab! active:cursor-grabbing!"
-          : "cursor-move"
+          : isSelected
+            ? "cursor-move"
+            : "cursor-pointer"
       )}
     >
       <div className="w-full h-full">
