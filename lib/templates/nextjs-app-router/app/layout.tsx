@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -20,7 +21,10 @@ export default function RootLayout({
             <body className={cn(
                 "min-h-screen bg-background font-sans antialiased",
                 inter.variable
-            )}>{children}</body>
+            )}>
+                {children}
+                <Script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js" strategy="afterInteractive" />
+            </body>
         </html>
     );
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { generateNextJsZip, getPageContent } from "@/lib/export/zipper";
+import { THEME_LIST } from "@/lib/themes";
 
 export async function GET(
     req: NextRequest,
@@ -56,6 +57,9 @@ export async function GET(
             return new NextResponse("Vite export not implemented yet", { status: 501 });
         }
 
+        // Find theme style string
+        const themeStyle = THEME_LIST.find(t => t.id === project.theme)?.style || "";
+
         const zipBuffer = await generateNextJsZip({
             frames: project.frames.map(f => ({
                 id: f.id,
@@ -63,7 +67,7 @@ export async function GET(
                 htmlContent: f.htmlContent
             })),
             projectValues: {
-                theme: project.theme || "light"
+                theme: themeStyle
             }
         });
 

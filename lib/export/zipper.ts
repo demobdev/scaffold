@@ -58,7 +58,17 @@ export async function generateNextJsZip(options: ExportOptions) {
 
     for (const file of filesToCopy) {
         try {
-            const content = await readFile(join(templatePath, file), "utf-8");
+            let content = await readFile(join(templatePath, file), "utf-8");
+
+            // Inject dynamic theme into globals.css
+            if (file === "app/globals.css" && options.projectValues?.theme) {
+                const themeVars = options.projectValues.theme;
+                content = content.replace(
+                    /@layer base \{[\s\S]*?\:root \{[\s\S]*?\}/,
+                    `@layer base {\n  :root {\n${themeVars}\n  }`
+                );
+            }
+
             zip.file(file, content);
         } catch (e) {
             console.warn(`Missing template file: ${file}`);
